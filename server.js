@@ -21,11 +21,11 @@ const LogErrors = require('./middleware/LogErrors');
 
 connectDB();
 app.use(express.urlencoded( { extended: false })); 
-app.use(express.json());
+app.use(express.json({ limit: "10kb" }));
 app.use(cors({ origin: ['*'] }));
 app.use(cookieParser());
 app.use(session({
-    secret: process.env.SESSION_SECRET_KEY,
+    secret: "my/secret09",
     resave: true,
     saveUninitialized: true,
     cookie: { maxAge: 86400000 },
@@ -46,6 +46,8 @@ app.use('/api/contacts', require('./routes/contactsRouter'));
 app.use('/api/chat', require('./routes/chatRouter'));
 
 app.use(LogErrors);
+
+app.disable('x-powered-by');
 
 process.on("uncaughtException", (err) => {
 
