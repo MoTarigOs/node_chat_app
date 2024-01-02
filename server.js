@@ -2,6 +2,8 @@
 const connectDB = require('./config/dbConnection');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv').config();
+const path = require('path');
+const fs = require('fs').promises;
 const { json } = require('body-parser');
 const express = require('express');
 const app = express();
@@ -20,3 +22,5 @@ mongoose.connection.once('open', () => {
     console.log('Connected!');
     app.listen(PORT, () => {console.log(`Server is running on port: ${PORT}`);});
 });
+
+fs.appendFile(path.join(__dirname, "log.log"), "New text appended to file");
