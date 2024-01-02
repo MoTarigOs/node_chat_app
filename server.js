@@ -12,11 +12,12 @@ const session = require('express-session');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
-const rateLimitMiddleware = require('./Middleware/RateLimiter');
+const rateLimitMiddleware = require('./middleware/RateLimiter');
 const buildLogger = require('./Logger/ProdLogger');
 const logger = buildLogger();
 const passport = require('passport');
 const MemoryStore = require('memorystore')(session);
+const LogErrors = require('./middleware/LogErrors');
 
 connectDB();
 app.use(express.urlencoded( { extended: false })); 
@@ -43,6 +44,19 @@ app.use('/api/login', require('./routes/authRouter'));
 app.use('/api/logout', require('./routes/logoutRouter'));
 app.use('/api/contacts', require('./routes/contactsRouter'));
 app.use('/api/chat', require('./routes/chatRouter'));
+
+app.use(LogErrors);
+
+process.on("uncaughtException", (err) => {
+
+  const errMsg = err.stack.toString().replaceAll(/[\n\r]/g, '');
+
+  logger.error(errMsg, () => {
+      mongoose.disconnect();
+      process.exit(0);
+  });
+
+});
 
 mongoose.connection.once('open', () => {
     console.log('Connected!');
