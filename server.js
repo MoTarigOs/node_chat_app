@@ -2,9 +2,6 @@
 const connectDB = require('./config/dbConnection');
 const mongoose = require('mongoose');
 require('dotenv').config();
-const path = require('path');
-const fs = require('fs').promises;
-const { json } = require('body-parser');
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3500;
@@ -18,11 +15,12 @@ const logger = buildLogger();
 const passport = require('passport');
 const MemoryStore = require('memorystore')(session);
 const LogErrors = require('./middleware/LogErrors');
+const tooBusy = require('toobusy-js');
 
 connectDB();
 app.use(express.urlencoded( { extended: false })); 
 app.use(express.json({ limit: "10kb" }));
-app.use(cors({ origin: ['*'] }));
+app.use(cors({ origin: ['https://motarigos.github.io/mosocial/*', 'https://motarigos.github.io', 'http://localhost:3000'], credentials: true, allowedHeaders: ['Content-Type', 'Authorization', 'authorization'] }));
 app.use(cookieParser());
 app.use(session({
     secret: "my/secret09",
@@ -39,6 +37,13 @@ app.use(passport.session());
 app.use(express.urlencoded( { extended: false })); 
 app.use(express.json({ limit: "10kb" }));
 app.use(rateLimitMiddleware);
+app.use(function (req, res, next) {
+  if(tooBusy()){
+      return res.status(503).send("The server is too busy, please try again after a moment");
+  } else {
+      next();
+  }
+});
 app.use('/api/register', require('./routes/registerRouter'));
 app.use('/api/login', require('./routes/authRouter'));
 app.use('/api/logout', require('./routes/logoutRouter'));
@@ -64,5 +69,3 @@ mongoose.connection.once('open', () => {
     console.log('Connected!');
     app.listen(PORT, () => {console.log(`Server is running on port: ${PORT}`);});
 });
-
-fs.appendFile(path.join(__dirname, "log.log"), "New text appended to file");
