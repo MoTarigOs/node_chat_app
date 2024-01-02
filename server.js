@@ -16,6 +16,7 @@ const rateLimitMiddleware = require('./Middleware/RateLimiter');
 const buildLogger = require('./Logger/ProdLogger');
 const logger = buildLogger();
 const passport = require('passport');
+const MemoryStore = require('memorystore')(session);
 
 connectDB();
 app.use(express.urlencoded( { extended: false })); 
